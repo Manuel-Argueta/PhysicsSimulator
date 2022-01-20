@@ -10,42 +10,40 @@ class Block {
         this.vY = vY;
         this.mass = mass;
         this.color = color;
-        this.length = length;
+        this.len = length;
     }
 
     renderBlock() {
         etx.beginPath();
-        etx.rect(this.posX,this.posY,this.length,this.length);
+        etx.rect(this.posX,this.posY,this.len,this.len);
         etx.closePath();
         etx.fillStyle = this.color;
         etx.fill();
     }
 
     checkBoundaries() {
-        if ((this.posY+this.length) > environment.height || (this.posY) < 0) {
+        if ((this.posY+this.len) > environment.height || (this.posY) < 0) {
             this.vY = -this.vY;
         }
-        if ((this.posX+this.length) > environment.width || (this.posX) < 0) {
+        if ((this.posX+this.len) > environment.width || (this.posX) < 0) {
             this.vX = -this.vX;
         }
     }
 
-    checkCollision(object) {
-        if (this.vX < 0 && object.vX > 0) {
-            console.log("here")
-            if ((this.posX+this.length) == object.posX) {
-                object.vX = this.vX;
-                this.vX = -this.vX;
-            }
-        } else { 
-            if ((this.posX) == object.posX) {
-                object.vX = this.vX;
-                this.vX = -this.vX;
-            }
+    checkCollision(object) {   
+        if (this.posX == (object.posX+object.len)) {
+            console.log("this")   
+            object.vX = this.vX;
+            this.vX = -this.vX;
         }
 
+        if (this.posX+this.len == object.posX ) {
+            console.log("other")
+            object.vX = this.vX;
+            this.vX = -this.vX;
+        }
 
-        if ((this.posY) == object.posY){
+        if (this.posY == object.posY){
             object.vY =  this.vY;
             this.vY = -this.vY;
         }
@@ -54,10 +52,10 @@ class Block {
 }
 
 
-let Block1 = new Block(100,275,-2,0,100,'blue',25);
-let Block2 = new Block(150,275,2,0,10,'red',25);
-//let Block3 = new Block(100,275,-2,5,10,'black',25);
-let blocks = [Block1,Block2]
+let Block1 = new Block(200,275,5,0,100,'blue',25);
+let Block2 = new Block(100,275,-5,0,10,'red',25);
+let Block3 = new Block(100,275,-2,0,10,'black',25);
+let blocks = [Block1,Block2,Block3]
 function drawEnvironment() {
     etx.clearRect(0,0,environment.width,environment.height)
     for (let i = 0; i < blocks.length;i++) {
@@ -65,18 +63,28 @@ function drawEnvironment() {
         blocks[i].posX += blocks[i].vX;
         blocks[i].posY += blocks[i].vY;
         blocks[i].checkBoundaries();
-        if (i == blocks.length-1) {
-            blocks[i].checkCollision(blocks[0])
-        }  else {
-            blocks[i].checkCollision(blocks[i+1])
-
-        }
+        let closestObject = filterObjectsDistance(blocks[i],blocks);
+        console.log(blocks[i].color + " closest to "+ closestObject.color)
+        blocks[i].checkCollision(closestObject);
     }
     window.requestAnimationFrame(drawEnvironment)
 }
 
 for (let i = 0; i < blocks.length;i++) {
     blocks[i].renderBlock();
+}
+
+function filterObjectsDistance(object,objectList) {
+    let closestObjectIndex = 0;
+    for (let i = 0; i < objectList.length; i++) {
+        //How to detremine shortest distance between current position and others current positions
+        if (Math.abs(object.posX-objectList[i].posX) < Math.abs(object.posX-objectList[closestObjectIndex].posX)) {
+            closestObjectIndex = i;
+        }   
+        return objectList[closestObjectIndex]
+    }
+
+
 }
 
 window.requestAnimationFrame(drawEnvironment)
